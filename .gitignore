@@ -1,0 +1,24 @@
+# --- Entorno y Secretos ---
+.env
+docker.env
+*.env
+
+# --- Docker y Datos ---
+*/postgres_data/
+*/redis_data/
+*/rabbitmq_data/
+
+# --- Base de Datos ---
+*.log
+
+# --- Sistema Operativo y Editores ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# --- Logs de aplicaciones ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,48 @@
+services:
+  # Base de datos central
+  # Catalogo de tenants y usuarios
+  db-central:
+    image: postgres:15-alpine
+    container_name: asigna-central-db
+    env_file:
+      - ./docker.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-scripts/central:/docker-entrypoint-initdb.d
+
+  # Silo de datos - Agencia prueba 1
+  db-tenant-pruebauno:
+    image: postgres:15-alpine
+    container_name: asigna-db-pruebauno
+    env_file:
+      - ./docker.env
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init-scripts/tenants:/docker-entrypoint-initdb.d
+
+  # Silo de datos - Agencia prueba 2
+  db-tenant-pruebados:
+    image: postgres:15-alpine
+    container_name: asigna-db-pruebados
+    env_file:
+      - ./docker.env
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./init-scripts/tenants:/docker-entrypoint-initdb.d
+
+  # Cache y Gestion de sessiones
+  redis:
+    image: redis:7-alpine
+    container_name: asigna-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+
+
+networks:
+  default:
+    name: asigna-network
+
