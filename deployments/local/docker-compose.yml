@@ -1,4 +1,16 @@
 services:
+  # Reverse proxy - Caddy
+  caddy:
+    image: caddy:2-alpine
+    container_name: asigna-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - asigna-network
   # Base de datos central
   # Catalogo de tenants y usuarios
   db-central:
@@ -41,8 +53,7 @@ services:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
 
-
 networks:
-  default:
-    name: asigna-network
+  asigna-network:
+    driver: bridge
 

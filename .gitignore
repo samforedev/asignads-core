@@ -3,6 +3,9 @@
 docker.env
 *.env
 
+# --- CaddyFile ---
+Caddyfile
+
 # --- Docker y Datos ---
 */postgres_data/
 */redis_data/
