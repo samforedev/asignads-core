@@ -24,11 +24,10 @@ func NewTenantResolver(cache services.TenantRepository, db services.TenantReposi
 
 func (r *TenantResolver) Resolve(ctx context.Context, host string) (*domain.Tenant, error) {
 	subdomain := r.extractSubDomain(host)
-
 	tenant, err := r.cache.GetBySubDomain(ctx, subdomain)
 	if err == nil {
-		if !tenant.IsActive() {
-			return nil, types.ErrTenantInactive
+		if err := r.validateAndAsyncCache(tenant, false); err != nil {
+			return nil, err
 		}
 		return tenant, nil
 	}
@@ -38,13 +37,9 @@ func (r *TenantResolver) Resolve(ctx context.Context, host string) (*domain.Tena
 		return nil, fmt.Errorf("%w: %s", types.ErrTenantNotFound, subdomain)
 	}
 
-	if !tenant.IsActive() {
-		return nil, types.ErrTenantInactive
+	if err := r.validateAndAsyncCache(tenant, true); err != nil {
+		return nil, err
 	}
-
-	go func(t *domain.Tenant) {
-		_ = r.cache.SaveInCache(context.Background(), t)
-	}(tenant)
 
 	return tenant, nil
 }
@@ -52,4 +47,17 @@ func (r *TenantResolver) Resolve(ctx context.Context, host string) (*domain.Tena
 func (r *TenantResolver) extractSubDomain(host string) string {
 	hostParts := strings.Split(host, ".")[0]
 	return strings.ToLower(hostParts)
+}
+
+func (r *TenantResolver) validateAndAsyncCache(t *domain.Tenant, shouldCache bool) error {
+	if !t.IsActive() {
+		return types.ErrTenantInactive
+	}
+
+	if shouldCache {
+		go func(t *domain.Tenant) {
+			_ = r.cache.SaveInCache(context.Background(), t)
+		}(t)
+	}
+	return nil
 }

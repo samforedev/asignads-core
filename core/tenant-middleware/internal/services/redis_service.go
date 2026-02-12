@@ -11,6 +11,7 @@ import (
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/services"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types"
+	asigna_multitenancy "github.com/samforedev/asignads/lib/asigna-multitenancy"
 )
 
 type redisService struct {
@@ -51,5 +52,11 @@ func (r *redisService) SaveInCache(ctx context.Context, tenant *domain.Tenant) e
 		return fmt.Errorf("serialize tenant error: %w", err)
 	}
 
-	return r.client.Set(ctx, key, data, r.ttl).Err()
+	if err := r.client.Set(ctx, key, data, r.ttl).Err(); err != nil {
+		return err
+	}
+
+	dsnKey := asigna_multitenancy.GetTenantDSNKey(tenant.ID)
+
+	return r.client.Set(ctx, dsnKey, tenant.DBDSN, r.ttl).Err()
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types"
+	asigna_multitenancy "github.com/samforedev/asignads/lib/asigna-multitenancy"
 )
 
 func TenantLoader(resolver *TenantResolver) gin.HandlerFunc {
@@ -21,14 +21,10 @@ func TenantLoader(resolver *TenantResolver) gin.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(c.Request.Context(), types.TenantIDKey, tenant.ID)
-		ctx = context.WithValue(ctx, types.TenantDSNKey, tenant.DBDSN)
+		ctx := context.WithValue(c.Request.Context(), asigna_multitenancy.TenantIDKey, tenant.ID)
 		c.Request = c.Request.WithContext(ctx)
-
-		c.Set(string(types.TenantIDKey), tenant.ID)
-		c.Set(string(types.TenantDSNKey), tenant.DBDSN)
-
-		c.Writer.Header().Set(string(types.TenantIDKey), tenant.ID)
+		c.Set(string(asigna_multitenancy.TenantIDKey), tenant.ID)
+		c.Writer.Header().Set(string(asigna_multitenancy.TenantIDKey), tenant.ID)
 		c.Next()
 	}
 }
