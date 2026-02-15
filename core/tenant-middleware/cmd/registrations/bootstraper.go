@@ -15,8 +15,9 @@ func SetUp() {
 	redisRepo := services.NewRedisService(rdbClient)
 	postgresRepo := services.NewPostgresService(dbClient)
 
+	manager := business.NewTenantManager(redisRepo, postgresRepo)
 	resolver := business.NewTenantResolver(redisRepo, postgresRepo)
-	server := api.NewServer(cfg, resolver)
+	server := api.NewServer(cfg, resolver, manager)
 
 	if err := server.Run(); err != nil {
 		panic("Fatal error to run server: " + err.Error())
