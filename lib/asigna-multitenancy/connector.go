@@ -3,8 +3,10 @@ package asigna_multitenancy
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/sony/gobreaker"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,35 +14,56 @@ import (
 type TenantConnector struct {
 	registry    *ConnectionRegistry
 	redisClient *redis.Client
+	cb          *gobreaker.CircuitBreaker
 }
 
 func NewTenantConnector(redisClient *redis.Client) *TenantConnector {
+
+	settings := gobreaker.Settings{
+		Name:        "Redis-DSN-Resolver",
+		MaxRequests: 2,
+		Interval:    5 * time.Second,
+		Timeout:     10 * time.Second,
+		ReadyToTrip: func(counts gobreaker.Counts) bool {
+			return counts.ConsecutiveFailures >= 3
+		},
+		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
+			fmt.Printf("Circuit Breaker [%s]: %s -> %s\n", name, from, to)
+		},
+	}
+
 	return &TenantConnector{
 		registry:    NewConnectionRegistry(),
 		redisClient: redisClient,
+		cb:          gobreaker.NewCircuitBreaker(settings),
 	}
 }
 
 func (c *TenantConnector) GetDB(ctx context.Context) (*gorm.DB, error) {
-	id := ExtractTenantID(ctx)
-	if id == "" {
+	tenantID := ExtractTenantID(ctx)
+	if tenantID == "" {
 		return nil, ErrMissingTenantContext
 	}
 
-	// Cache en RAM del microservicio
-	db, _, exists := c.registry.Get(id)
+	db, _, exists := c.registry.Get(tenantID)
 	if exists && db != nil {
 		return db, nil
 	}
 
-	// Cache en REDIS (Capa de seguridad)
-	dsnKey := "tenant:" + id + ":dsn"
-	dsn, err := c.redisClient.Get(ctx, dsnKey).Result()
+	result, err := c.cb.Execute(func() (interface{}, error) {
+		dsnKey := "tenant:" + tenantID + ":dsn"
+		dsn, err := c.redisClient.Get(ctx, dsnKey).Result()
+		if err != nil {
+			return nil, err
+		}
+		return dsn, nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("could not resolve DSN from redis for tenant %s: %w", id, err)
+		return nil, fmt.Errorf("dsn resolution failed (breaker): %w", err)
 	}
 
-	// Conectar a la DB
+	dsn := result.(string)
 	newDb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		PrepareStmt: true,
 	})
@@ -48,7 +71,6 @@ func (c *TenantConnector) GetDB(ctx context.Context) (*gorm.DB, error) {
 		return nil, ErrConnectionFailed
 	}
 
-	// Guarda registro para la proxima conexion
-	c.registry.Set(id, dsn, newDb)
+	c.registry.Set(tenantID, dsn, newDb)
 	return newDb, nil
 }
