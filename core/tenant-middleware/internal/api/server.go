@@ -74,8 +74,12 @@ func (s *Server) setupRoutes() {
 			return
 		}
 
-		target := "http://127.0.0.1:8081"
-		remote, _ := url.Parse(target)
+		target := s.cfg.BackendTargetURL
+		remote, err := url.Parse(target)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid proxy target"})
+			return
+		}
 
 		proxy := httputil.NewSingleHostReverseProxy(remote)
 
