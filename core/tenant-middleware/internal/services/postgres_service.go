@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/services"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
+	baseentitieserr "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/error"
 )
 
 type postgresService struct {
@@ -29,7 +30,7 @@ func (p postgresService) GetById(ctx context.Context, id string) (*domain.Tenant
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, types.ErrTenantNotFound
+		return nil, baseentitieserr.ErrTenantNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("search db central error: %w", err)
@@ -38,7 +39,7 @@ func (p postgresService) GetById(ctx context.Context, id string) (*domain.Tenant
 	return &t, nil
 }
 
-func (p postgresService) UpdateStatus(ctx context.Context, id string, status enums.TenantStatus) error {
+func (p postgresService) UpdateStatus(ctx context.Context, id string, status enum.TenantStatus) error {
 	query := types.UpdateTenantStatus
 
 	result, err := p.db.ExecContext(ctx, query, status, id)
@@ -51,7 +52,7 @@ func (p postgresService) UpdateStatus(ctx context.Context, id string, status enu
 	}
 
 	if rowsAffected == 0 {
-		return types.ErrTenantNotFound
+		return baseentitieserr.ErrTenantNotFound
 	}
 
 	return nil
@@ -66,7 +67,7 @@ func (p postgresService) GetBySubDomain(ctx context.Context, subdomain string) (
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, types.ErrTenantNotFound
+		return nil, baseentitieserr.ErrTenantNotFound
 	}
 
 	if err != nil {

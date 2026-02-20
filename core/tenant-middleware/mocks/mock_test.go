@@ -3,8 +3,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -28,7 +28,7 @@ func (m *MockTenantRepository) GetBySubDomain(ctx context.Context, subdomain str
 	return args.Get(0).(*domain.Tenant), args.Error(1)
 }
 
-func (m *MockTenantRepository) UpdateStatus(ctx context.Context, id string, status enums.TenantStatus) error {
+func (m *MockTenantRepository) UpdateStatus(ctx context.Context, id string, status enum.TenantStatus) error {
 	args := m.Called(ctx, id, status)
 	return args.Error(0)
 }

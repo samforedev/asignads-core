@@ -6,10 +6,10 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/business"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/config"
-	asigna_multitenancy "github.com/samforedev/asignads/lib/asigna-multitenancy"
+	baseentitiesconstants "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 )
 
 type Server struct {
@@ -46,7 +46,7 @@ func (s *Server) setupRoutes() {
 			id := c.Param("id")
 			var input struct {
 				// Gin usará el UnmarshalJSON que acabamos de crear
-				Status enums.TenantStatus `json:"status" binding:"required"`
+				Status enum.TenantStatus `json:"status" binding:"required"`
 			}
 
 			if err := c.ShouldBindJSON(&input); err != nil {
@@ -68,7 +68,7 @@ func (s *Server) setupRoutes() {
 	}
 
 	s.engine.NoRoute(business.TenantLoader(s.resolver), func(c *gin.Context) {
-		tenantID, _ := c.Get(string(asigna_multitenancy.TenantIDKey))
+		tenantID, _ := c.Get(string(baseentitiesconstants.TenantIDKey))
 
 		if tenantID == nil || tenantID == "" {
 			return

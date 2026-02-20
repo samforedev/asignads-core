@@ -7,6 +7,7 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
+	baseentitiesconstants "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
 	asignamultitenancy "github.com/samforedev/asignads/lib/asigna-multitenancy"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +20,7 @@ func TestConnector_CircuitBreaker_Open(t *testing.T) {
 		MaxRetries:  -1,
 	})
 	connector := asignamultitenancy.NewTenantConnector(badRedis)
-	ctx := context.WithValue(context.Background(), asignamultitenancy.TenantIDKey, "test-id")
+	ctx := context.WithValue(context.Background(), baseentitiesconstants.TenantIDKey, "test-id")
 
 	for i := 0; i < 3; i++ {
 		_, _ = connector.GetDB(ctx)
@@ -43,7 +44,7 @@ func TestConnector_CircuitBreaker_Success(t *testing.T) {
 	key := asignamultitenancy.GetTenantDSNKey(tenantID)
 	_ = mr.Set(key, expectedDSN)
 
-	ctx := context.WithValue(context.Background(), asignamultitenancy.TenantIDKey, tenantID)
+	ctx := context.WithValue(context.Background(), baseentitiesconstants.TenantIDKey, tenantID)
 	_, err := connector.GetDB(ctx)
 
 	assert.Error(t, err)

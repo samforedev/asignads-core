@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/business"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -25,7 +25,7 @@ func TestTenantResolver_Resolve(t *testing.T) {
 		expectedTenant := &domain.Tenant{
 			ID:        "uuid-123",
 			Subdomain: subdomain,
-			Status:    enums.TenantStatusActive.String(),
+			Status:    enum.ACTIVE,
 		}
 
 		mockCache.On("GetBySubDomain", ctx, subdomain).Return(expectedTenant, nil)
@@ -46,7 +46,7 @@ func TestTenantResolver_Resolve(t *testing.T) {
 		tenantFromDB := &domain.Tenant{
 			ID:        "uuid-from-db",
 			Subdomain: subdomain,
-			Status:    enums.TenantStatusActive.String(),
+			Status:    enum.ACTIVE,
 		}
 
 		mockCache.On("GetBySubDomain", ctx, subdomain).Return(nil, assert.AnError)

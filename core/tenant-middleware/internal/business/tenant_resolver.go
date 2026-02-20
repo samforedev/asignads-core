@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/services"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
+	baseentitieserr "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/error"
 )
 
 type TenantResolver struct {
@@ -34,7 +34,7 @@ func (r *TenantResolver) Resolve(ctx context.Context, host string) (*domain.Tena
 
 	tenant, err = r.db.GetBySubDomain(ctx, subdomain)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", types.ErrTenantNotFound, subdomain)
+		return nil, fmt.Errorf("%w: %s", baseentitieserr.ErrTenantNotFound, subdomain)
 	}
 
 	if err := r.validateAndAsyncCache(tenant, true); err != nil {
@@ -51,7 +51,7 @@ func (r *TenantResolver) extractSubDomain(host string) string {
 
 func (r *TenantResolver) validateAndAsyncCache(t *domain.Tenant, shouldCache bool) error {
 	if !t.IsActive() {
-		return types.ErrTenantInactive
+		return baseentitieserr.ErrTenantInactive
 	}
 
 	if shouldCache {

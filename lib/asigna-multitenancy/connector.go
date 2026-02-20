@@ -9,6 +9,8 @@ import (
 	"github.com/sony/gobreaker"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	baseentitieserror "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/error"
 )
 
 type TenantConnector struct {
@@ -42,7 +44,7 @@ func NewTenantConnector(redisClient *redis.Client) *TenantConnector {
 func (c *TenantConnector) GetDB(ctx context.Context) (*gorm.DB, error) {
 	tenantID := ExtractTenantID(ctx)
 	if tenantID == "" {
-		return nil, ErrMissingTenantContext
+		return nil, baseentitieserror.ErrMissingTenantContext
 	}
 
 	db, _, exists := c.registry.Get(tenantID)
@@ -68,7 +70,7 @@ func (c *TenantConnector) GetDB(ctx context.Context) (*gorm.DB, error) {
 		PrepareStmt: true,
 	})
 	if err != nil {
-		return nil, ErrConnectionFailed
+		return nil, baseentitieserror.ErrConnectionFailed
 	}
 
 	c.registry.Set(tenantID, dsn, newDb)

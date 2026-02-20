@@ -2,10 +2,11 @@ package services
 
 import (
 	"database/sql"
+	"log"
+
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/config"
-	"log"
 )
 
 func InitRedis(cfg *config.Config) *redis.Client {

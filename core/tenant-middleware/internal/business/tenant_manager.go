@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/services"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 )
 
 type TenantManager struct {
@@ -20,7 +20,7 @@ func NewTenantManager(db services.TenantRepository, cache services.TenantReposit
 	}
 }
 
-func (m *TenantManager) ChangeStatus(ctx context.Context, id string, status enums.TenantStatus) error {
+func (m *TenantManager) ChangeStatus(ctx context.Context, id string, status enum.TenantStatus) error {
 	_, err := m.dbRepo.GetById(ctx, id)
 	if err != nil {
 		return err

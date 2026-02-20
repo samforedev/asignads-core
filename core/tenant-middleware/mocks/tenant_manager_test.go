@@ -4,16 +4,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/domain"
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/abstractions/types/enums"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/business"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTenantManager_ChangeStatus(t *testing.T) {
 	ctx := context.Background()
 	tenantID := "uuid-123"
-	newStatus := enums.TenantStatusInactive
+	newStatus := enum.INACTIVE
 
 	mockDB := new(MockTenantRepository)
 	mockCache := new(MockTenantRepository)
