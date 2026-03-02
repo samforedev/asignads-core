@@ -1,9 +1,13 @@
 package asigna_multitenancy
 
-import "context"
+import (
+	"context"
+
+	baseentitiesconstants "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
+)
 
 func ExtractTenantID(ctx context.Context) string {
-	if id, ok := ctx.Value(TenantIDKey).(string); ok {
+	if id, ok := ctx.Value(baseentitiesconstants.TenantIDKey).(string); ok {
 		return id
 	}
 	return ""

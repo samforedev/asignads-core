@@ -8,16 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/business"
 	"github.com/samforedev/asignads/core/tenant-middleware/internal/config"
-	asigna_multitenancy "github.com/samforedev/asignads/lib/asigna-multitenancy"
+	baseentitiesconstants "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
+	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
 )
 
 type Server struct {
 	engine   *gin.Engine
 	cfg      *config.Config
 	resolver *business.TenantResolver
+	manager  *business.TenantManager
 }
 
-func NewServer(cfg *config.Config, resolver *business.TenantResolver) *Server {
+func NewServer(cfg *config.Config, resolver *business.TenantResolver, manager *business.TenantManager) *Server {
 	if cfg.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -26,6 +28,7 @@ func NewServer(cfg *config.Config, resolver *business.TenantResolver) *Server {
 		engine:   gin.Default(),
 		cfg:      cfg,
 		resolver: resolver,
+		manager:  manager,
 	}
 
 	s.setupRoutes()
@@ -37,15 +40,46 @@ func (s *Server) setupRoutes() {
 		c.JSON(200, gin.H{"status": "up"})
 	})
 
+	admin := s.engine.Group("/admin/tenants")
+	{
+		admin.PATCH("/:id/status", func(c *gin.Context) {
+			id := c.Param("id")
+			var input struct {
+				// Gin usará el UnmarshalJSON que acabamos de crear
+				Status enum.TenantStatus `json:"status" binding:"required"`
+			}
+
+			if err := c.ShouldBindJSON(&input); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value"})
+				return
+			}
+
+			// El Manager actualiza DB y limpia Redis
+			err := s.manager.ChangeStatus(c.Request.Context(), id, input.Status)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"message": "Tenant status updated and cache invalidated successfully",
+			})
+		})
+	}
+
 	s.engine.NoRoute(business.TenantLoader(s.resolver), func(c *gin.Context) {
-		tenantID, _ := c.Get(string(asigna_multitenancy.TenantIDKey))
+		tenantID, _ := c.Get(string(baseentitiesconstants.TenantIDKey))
 
 		if tenantID == nil || tenantID == "" {
 			return
 		}
 
-		target := "http://127.0.0.1:8081"
-		remote, _ := url.Parse(target)
+		target := s.cfg.BackendTargetURL
+		remote, err := url.Parse(target)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid proxy target"})
+			return
+		}
 
 		proxy := httputil.NewSingleHostReverseProxy(remote)
 

@@ -1,15 +1,10 @@
-package asigna_multitenancy
+package error
 
 import "errors"
 
-type ContextKey string
-
-const (
-	TenantIDKey  ContextKey = "x-tenant-id"
-	TenantDSNKey ContextKey = "x-tenant-db-dsn"
-)
-
 var (
+	ErrTenantNotFound       = errors.New("tenant not found")
+	ErrTenantInactive       = errors.New("tenant is inactive")
 	ErrMissingTenantContext = errors.New("tenant information (ID/DSN) missing in context")
 	ErrConnectionFailed     = errors.New("failed to establish connection to tenant database")
 )
