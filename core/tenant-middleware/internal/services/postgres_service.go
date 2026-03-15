@@ -26,7 +26,18 @@ func (p postgresService) GetById(ctx context.Context, id string) (*domain.Tenant
 
 	var t domain.Tenant
 	err := p.db.QueryRowContext(ctx, query, id).Scan(
-		&t.ID, &t.Name, &t.Subdomain, &t.DBDSN, &t.Status, &t.CreatedAt,
+		&t.ID,
+		&t.Name,
+		&t.Subdomain,
+		&t.DBHost,
+		&t.DBPort,
+		&t.DBName,
+		&t.DBUser,
+		&t.DBPassword,
+		&t.DBSSLMode,
+		&t.Settings,
+		&t.Status,
+		&t.CreatedAt,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -63,7 +74,18 @@ func (p postgresService) GetBySubDomain(ctx context.Context, subdomain string) (
 
 	var t domain.Tenant
 	err := p.db.QueryRowContext(ctx, query, subdomain).Scan(
-		&t.ID, &t.Name, &t.Subdomain, &t.DBDSN, &t.Status, &t.CreatedAt,
+		&t.ID,
+		&t.Name,
+		&t.Subdomain,
+		&t.DBHost,
+		&t.DBPort,
+		&t.DBName,
+		&t.DBUser,
+		&t.DBPassword,
+		&t.DBSSLMode,
+		&t.Settings,
+		&t.Status,
+		&t.CreatedAt,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {

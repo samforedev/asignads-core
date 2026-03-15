@@ -83,7 +83,17 @@ func (r *redisService) SaveInCache(ctx context.Context, tenant *domain.Tenant) e
 	pipe := r.client.Pipeline()
 	pipe.Set(ctx, subKey, data, r.ttl)
 	pipe.Set(ctx, idKey, data, r.ttl)
-	pipe.Set(ctx, dsnKey, tenant.DBDSN, r.ttl)
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		tenant.DBHost,
+		tenant.DBPort,
+		tenant.DBUser,
+		tenant.DBPassword,
+		tenant.DBName,
+		tenant.DBSSLMode,
+	)
+
+	pipe.Set(ctx, dsnKey, dsn, r.ttl)
 
 	_, err := pipe.Exec(ctx)
 	return err
