@@ -35,8 +35,6 @@ services:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
 
-  # Tenant-Middleware
-
 networks:
   asigna-network:
     driver: bridge

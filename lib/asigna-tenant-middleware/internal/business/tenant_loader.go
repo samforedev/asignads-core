@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	baseentities "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
+	baseentitiesconstants "github.com/samforedev/asignads/lib/asigna-base-entities/tenant/constant"
 )
 
 func TenantLoader(resolver *TenantResolver) gin.HandlerFunc {
@@ -21,10 +21,10 @@ func TenantLoader(resolver *TenantResolver) gin.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(c.Request.Context(), baseentities.TenantIDKey, tenant.ID)
+		ctx := context.WithValue(c.Request.Context(), baseentitiesconstants.TenantIDKey, tenant.ID)
 		c.Request = c.Request.WithContext(ctx)
-		c.Set(string(baseentities.TenantIDKey), tenant.ID)
-		c.Writer.Header().Set(string(baseentities.TenantIDKey), tenant.ID)
+		c.Set(string(baseentitiesconstants.TenantIDKey), tenant.ID)
+		c.Writer.Header().Set(string(baseentitiesconstants.TenantIDKey), tenant.ID.String())
 		c.Next()
 	}
 }

@@ -1,13 +1,13 @@
-package mocks
+package test
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/samforedev/asignads/core/tenant-middleware/internal/business"
+	"github.com/google/uuid"
 	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/domain"
-	"github.com/samforedev/asignads/lib/asigna-base-entities/tenant/enum"
+	"github.com/samforedev/asignads/lib/asigna-tenant-middleware/internal/business"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -23,9 +23,9 @@ func TestTenantResolver_Resolve(t *testing.T) {
 		resolver := business.NewTenantResolver(mockCache, mockDB)
 
 		expectedTenant := &domain.Tenant{
-			ID:        "uuid-123",
+			ID:        uuid.New(),
 			Subdomain: subdomain,
-			Status:    enum.ACTIVE,
+			StatusId:  domain.StatusActive,
 		}
 
 		mockCache.On("GetBySubDomain", ctx, subdomain).Return(expectedTenant, nil)
@@ -44,9 +44,9 @@ func TestTenantResolver_Resolve(t *testing.T) {
 		resolver := business.NewTenantResolver(mockCache, mockDB)
 
 		tenantFromDB := &domain.Tenant{
-			ID:        "uuid-from-db",
+			ID:        uuid.New(),
 			Subdomain: subdomain,
-			Status:    enum.ACTIVE,
+			StatusId:  domain.StatusActive,
 		}
 
 		mockCache.On("GetBySubDomain", ctx, subdomain).Return(nil, assert.AnError)
