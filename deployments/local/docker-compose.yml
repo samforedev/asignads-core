@@ -23,33 +23,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init-scripts/central:/docker-entrypoint-initdb.d
-
-  # Silo de datos - Agencia prueba 1
-  db-tenant-pruebauno:
-    image: postgres:15-alpine
-    container_name: asigna-db-pruebauno
-    networks:
-      - asigna-network
-    env_file:
-      - env/infra.env
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./init-scripts/tenants:/docker-entrypoint-initdb.d
-
-  # Silo de datos - Agencia prueba 2
-  db-tenant-pruebados:
-    image: postgres:15-alpine
-    container_name: asigna-db-pruebados
-    networks:
-      - asigna-network
-    env_file:
-      - env/infra.env
-    ports:
-      - "5434:5432"
-    volumes:
-      - ./init-scripts/tenants:/docker-entrypoint-initdb.d
+      - ./init-scripts:/docker-entrypoint-initdb.d
 
   # Cache y Gestion de sessiones
   redis:
@@ -60,22 +34,6 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
-
-  # Tenant-Middleware
-  tenant-middleware:
-    image: asigna-tenant-middleware:0.0.1
-    container_name: asigna-middleware
-    networks:
-      - asigna-network
-    env_file:
-      - env/middleware.env
-    ports:
-      - "8080:8080"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - db-central
-      - redis
 
 networks:
   asigna-network:
